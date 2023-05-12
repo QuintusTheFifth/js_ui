@@ -15,9 +15,48 @@
     />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="assets/css/Swap-form.css" />
+    <style>
+      .content-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 660px;
+        margin-left: -70px;
+        margin-right: -50px;
+      }
+      .table-container {
+        max-height: 280px;
+        overflow: auto;
+        /* background-color: #212429; */
+        border-radius: 10px;
+        padding: 20px;
+        color: whitesmoke;
+        overflow: hidden;
+      }
+      .table {
+        font-size: 0.9em;
+        width: 100%;
+        border-color: lightslategray !important; /* Add this */
+      }
+      .swap-container {
+        flex-grow: 1;
+      }
+      .table thead th {
+        color: lightslategray;
+      }
+      .table tbody td {
+        color: whitesmoke;
+      }
+
+      /* Add this */
+      .table .asset-cell {
+        background-color: #333333;
+        color: lightslategray;
+      }
+    </style>
   </head>
 
-  <body>
+  <body style="overflow: hidden">
     <nav
       class="navbar navbar-dark navbar-expand-md sticky-top py-3"
       id="mainNav"
@@ -65,77 +104,45 @@
         </div>
         <div class="row">
           <div class="col-md-6">
-            <h2 class="my-4" style="font-size: 24px; font-weight: 700">
-              my balances
-            </h2>
-            <div class="table-responsive">
-              <table class="table">
-                <thead class="text-center">
-                  <tr>
-                    <th class="text-center placeholder">ethereum</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="text-start">eth</td>
-                    <td class="text-center" id="ethBal">...</td>
-                  </tr>
-                  <tr class="text-center">
-                    <td class="text-start">chd</td>
-                    <td class="text-center" id="chdETHBal">...</td>
-                  </tr>
-                  <tr class="text-center">
-                    <td class="text-start">lp tokens</td>
-                    <td class="text-center" id="lpETHBal">...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-responsive">
-              <table class="table">
-                <thead class="text-center">
-                  <tr>
-                    <th class="text-center placeholder">gnosis&nbsp;</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="text-start">xdai</td>
-                    <td class="text-center" id="xDAIBal">...</td>
-                  </tr>
-                  <tr class="text-center">
-                    <td class="text-start">chd</td>
-                    <td class="text-center" id="chdGNOBal">...</td>
-                  </tr>
-                  <tr class="text-center">
-                    <td class="text-start">lp tokens</td>
-                    <td class="text-center" id="lpGNOBal">...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="table-responsive">
-              <table class="table">
-                <thead class="text-center">
-                  <tr>
-                    <th class="text-center placeholder">polygon</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="text-start">matic</td>
-                    <td class="text-center" id="maticBal">...</td>
-                  </tr>
-                  <tr class="text-center">
-                    <td class="text-start">chd</td>
-                    <td class="text-center" id="chdPOLBal">...</td>
-                  </tr>
-                  <tr class="text-center">
-                    <td class="text-start">lp tokens</td>
-                    <td class="text-center" id="lpPOLBal">...</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="content-container">
+              <div class="table-container">
+                <h2
+                  class="my-4"
+                  style="font-size: 24px; font-weight: 700; margin-left: 15px"
+                >
+                  your balances
+                </h2>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th class="text-center">Asset</th>
+                      <th class="text-center">Ethereum</th>
+                      <th class="text-center">Gnosis</th>
+                      <th class="text-center">Polygon</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="text-start">ETH/xDAI/MATIC</td>
+                      <td class="text-center" id="ethBal">...</td>
+                      <td class="text-center" id="xDAIBal">...</td>
+                      <td class="text-center" id="maticBal">...</td>
+                    </tr>
+                    <tr>
+                      <td class="text-start">CHD</td>
+                      <td class="text-center" id="chdETHBal">...</td>
+                      <td class="text-center" id="chdGNOBal">...</td>
+                      <td class="text-center" id="chdPOLBal">...</td>
+                    </tr>
+                    <tr>
+                      <td class="text-start">LP Tokens</td>
+                      <td class="text-center" id="lpETHBal">...</td>
+                      <td class="text-center" id="lpGNOBal">...</td>
+                      <td class="text-center" id="lpPOLBal">...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           <div class="col-md-6">
@@ -150,7 +157,7 @@
                   <div class="card swap-contents-card">
                     <div class="card-body">
                       <div class="card-input input-group">
-                          <button id="max-button" type="button">Max</button>
+                        <button id="max-button" type="button">Max</button>
                         <div class="input-card-top">
                           <input
                             type="text"
