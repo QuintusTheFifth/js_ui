@@ -222,16 +222,16 @@ async function handleChain(
   keypair
 ) {
   return new Promise(async (resolve, reject) => {
+    // retrieves the data of all these events from the blockchain, from the genesis block (block number 0) to the latest block.
+    // NewCommitment event is emitted from transact() in Charon.sol
+    // OracleDeposit reads tellor commitments to allow you to withdraw on this chain
     let eventFilter = chainCharon.filters.NewCommitment();
-    const eventData = await chainCharon.queryFilter(
-      eventFilter,
-      chainSet[0],
-      "latest"
-    );
+    const eventData = await chainCharon.queryFilter(eventFilter, chainSet[0], "latest");
     const promises = [];
     let myUtxos = [];
     let j = 0;
 
+    //enters a for loop where it tries to decrypt each new commitment event
     for (let i = 0; i < eventData.length; i++) {
       try {
         let myUtxo = Utxo.decrypt(
@@ -240,24 +240,41 @@ async function handleChain(
           eventData[i].args._index
         );
         myUtxo.chainID = getChainID(network);
+        // If the decrypted output has an amount greater than 0 and its commitmen
+        // is equal to the event's commitment, then it's considered a valid UTXO.
         if (
-          myUtxo.amount > 0 &&
+          myUtxo.amount > 0 
+          &&
           toFixedHex(eventData[i].args._commitment) ==
             toFixedHex(myUtxo.getCommitment(poseidon))
         ) {
+          console.log("myUtxo amount: " + myUtxo.amount);
           myUtxos.push(myUtxo);
           let myNullifier = toFixedHex(myUtxo.getNullifier(poseidon));
           promises.push(
+            // For each valid UTXO, check whether the UTXO has been spent on the blockchain or not using the isSpent() method
+            // If not spent, increment the second element in chainSet by the amount in the UTXO and also push the UTXO into the
+            // chainUTXOs array.
             chainCharon.isSpent(myNullifier).then(function (result) {
               if (!result) {
                 chainSet[1] = chainSet[1] + parseInt(myUtxos[j].amount);
                 chainUTXOs.push(myUtxos[j]);
+              } else {
+                chainSet[1] = chainSet[1] - parseInt(myUtxos[j].amount);
               }
               j++;
             })
           );
         }
-      } catch (err) {}
+        // If there's any error in the process of decrypting and validating a UTXO, the function catches it and
+        // continues to the next event data, thus ensuring that failure in processing one event does not stop it
+        // from processing the others.
+      } catch (err) {
+        console.error(`Error processing UTXO at index ${i}:`, err);
+        console.log("UTXO data: ", eventData[i]);
+        console.log("Current keypair: ", keypair);
+        continue;
+      }
     }
     await Promise.all(promises);
     resolve(true);
@@ -343,6 +360,8 @@ function loadPrivateBalances() {
       Math.round((sVal + mVal + cVal + psVal + pmVal + pcVal) * 100) / 100
     );
   } else {
+    console.log("optset 1 is: " + optSet[1])
+    console.log("gnoset 1 is: " + gnoSet[1])
     pgVal =
       Math.round(ethers.utils.formatEther(gnoSet[1].toString()) * 100) / 100;
     ppVal =
