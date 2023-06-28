@@ -185,6 +185,7 @@ async function prepareSend(_cUTXOs, _chain) {
         index: parseInt(_cUTXOs[jj].index.hex),
         chainID: _cUTXOs[jj].chainID,
       });
+      console.log("index tutxo: " + parseInt(_cUTXOs[jj].index.hex));
       tUtxo._commitment = _cUTXOs[jj]._commitment;
       tUtxo._nullifier = _cUTXOs[jj]._nullifier;
       newUTXOs.push(tUtxo);
@@ -350,7 +351,9 @@ async function handlePrivateTransactions(
     //get amount and address (can we just use an address?  Test 
     //that that person can then do something with it, if not, you need a registry?)
     await prepareSend(networkObject.UTXOs, getChainID(_network));
-    if (newUTXOs.length > 0 || changeUtxos > 0) {
+    const lastNewUtxo = newUTXOs[newUTXOs.length - 1];
+    const indexUTXO = lastNewUtxo.index;
+    if (newUTXOs.length > 0 || changeUtxos.length > 0) {
       const inputData = await prepareTransaction({
         charon: networkObject.Charon,
         inputs: newUTXOs,
@@ -360,7 +363,9 @@ async function handlePrivateTransactions(
         myHasherFunc: poseidon,
         myHasherFunc2: poseidon2,
       });
-
+      // throw 'stop'
+      const provider = networkObject.Provider;
+      const currentGasPrice = await provider.getGasPrice();
       const tx = await networkObject.Charon.transact(
         inputData.args,
         inputData.extData
@@ -372,6 +377,35 @@ async function handlePrivateTransactions(
         window.alert(
           `Transaction was successful! \nNetwork: ${_network} \nTransaction Hash: ${tx.hash}`
         );
+
+        console.log("network object utxos: ", networkObject.UTXOs);
+        console.log("new utxo length: " + newUTXOs.length);
+        console.log("length before: " + networkObject.UTXOs.length);
+        // Remove the spent UTXOs
+        networkObject.UTXOs = networkObject.UTXOs.filter(
+          (utxo) =>
+            !newUTXOs.some(
+              (newUtxo) => newUtxo.index === parseInt(utxo.index.hex)
+            )
+        );
+        console.log("length after: " + networkObject.UTXOs.length);
+
+        let i = 0;
+        // Convert indices back to hex for the change UTXOs
+        changeUtxos.forEach((utxo) => {
+          console.log("utxo index: ", utxo);
+          utxo.index = (indexUTXO + 2 + i).toString(16);
+          i++;
+        });
+
+        // // Add the change UTXOs
+        networkObject.UTXOs.push(...changeUtxos);
+        console.log(
+          "length after adding change: " + networkObject.UTXOs.length
+        );
+        newUTXOs = [];
+        changeUtxos = [];
+        utxoAmount = BigNumber.from("0");
       } else {
         console.log("Transaction failed");
         window.alert(`Transaction failed! \nPlease check your transaction.`);
