@@ -73,7 +73,7 @@ async function setBalances() {
     $(`#${label}Row`).text(network);
     try {
       const networkBal = await eval(`${network}Provider.getBalance(myAddress)`);
-      $(`#${label}Bal`).text(`${ethers.utils.formatEther(networkBal)} ${base}`);
+      $(`#${label}Bal`).text(`${parseFloat(ethers.utils.formatEther(networkBal)).toFixed(3)} ${base}`);
     } catch (err) {
       window.alert(
         "could not get balance for " +
